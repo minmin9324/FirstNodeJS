@@ -38,23 +38,49 @@ MongoClient.connect(
     app.post("/app", (request, response) => {
       console.log(request.body);
       const { title, detail } = request.body;
-      let total;
+
       client
         .db("todoapp")
         .collection("counter") //하낫만 찾을려면 findOne함수 사용 (쿼리문)
         .findOne({ name: "게시물 갯수" }, (error, result) => {
-          total = result.total;
-        });
+          client
+            .db("todoapp")
+            .collection("post")
+            .insertOne(
+              { _id: result.total + 1, title: title, detail: detail },
+              (error, result) => {
+                if (error) return console.log(error);
+                console.log("저장완료");
 
-      client
-        .db("todoapp")
-        .collection("post")
-        .insertOne(
-          { _id: total + 1, title: title, detail: detail },
-          (error, result) => {
-            console.log("저장완료");
-          }
-        );
+                client
+                  .db("todoapp")
+                  .collection("counter")
+                  .updateOne(
+                    { name: "게시물 갯수" },
+                    { $inc: { total: 1 } },
+                    (error, result) => {
+                      console.log("저장완료");
+                      if (error) return console.log(error);
+                    }
+                  );
+              }
+            );
+
+          // set은 update하는 값을 정확히 넣어줘야하고 inc는 기존값에서 넣어준 값만큼 증가시킨다.
+          // $ 표시 = operator 문법
+
+          // client
+          //   .db("todoapp")
+          //   .collection("counter")
+          //   .updateOne(
+          //     { name: "게시물 갯수" },
+          //     { $set: { total: result.total + 1 } },
+          //     (error, result) => {
+          //       console.log("저장완료");
+          //       if (error) return console.log(error);
+          //     }
+          //   );
+        });
 
       response.send("전송완료");
     });
