@@ -7,7 +7,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 const MongoClient = require("mongodb").MongoClient;
-const { response } = require("express");
+const { response, request } = require("express");
+
 MongoClient.connect(
   "mongodb+srv://mango:mango@cluster0.s6g7j.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
   (error, client) => {
@@ -36,7 +37,8 @@ MongoClient.connect(
     //xx경로로 들어오면 xx를 실행해줘
 
     app.post("/app", (request, response) => {
-      console.log(request.body);
+      //누가 form에서 /add로 post요청을 하면
+
       const { title, detail } = request.body;
 
       client
@@ -49,17 +51,15 @@ MongoClient.connect(
             .insertOne(
               { _id: result.total + 1, title: title, detail: detail },
               (error, result) => {
-                if (error) return console.log(error);
-                console.log("저장완료");
+                if (error) return console.log(error, "mango");
 
                 client
-                  .db("todoapp")
+                  .db("todoapp") //total id 값을 증가시키는 코드 => 글 발행을 완료되면 증가시키는 것이 좋다.=> 발행 뒤 실행되는 콜백함수(순차적으로 실행가능)에서 실행                  .db("todoapp")
                   .collection("counter")
                   .updateOne(
-                    { name: "게시물 갯수" },
-                    { $inc: { total: 1 } },
+                    { name: "게시물 갯수" }, //name이 게시물 갯수인 객체를 찾아줌  바꾸고 싶은 것
+                    { $inc: { total: 1 } }, // 바꿀 것  $set(변경),$inc(증가),$min(기존값보다 작을때 변경),$rename(key값 이름변경) 등등 $operate
                     (error, result) => {
-                      console.log("저장완료");
                       if (error) return console.log(error);
                     }
                   );
@@ -68,7 +68,7 @@ MongoClient.connect(
 
           // set은 update하는 값을 정확히 넣어줘야하고 inc는 기존값에서 넣어준 값만큼 증가시킨다.
           // $ 표시 = operator 문법
-
+          //set으로 한것
           // client
           //   .db("todoapp")
           //   .collection("counter")
@@ -97,6 +97,24 @@ MongoClient.connect(
         }); //Data다 찾을거다 .find.toArray()
       //   response.render("list.ejs");
     });
+
+    app.delete("/delete", (request, response) => {
+      console.log(request.body);
+      request.body._id = parseInt(request.body._id);
+      client
+        .db("todoapp")
+        .collection("post")
+        .deleteOne(request.body, (request, response) => {
+          response.status(200).send({ message: "성공이야" });
+        });
+    });
+    // app.get('/어쩌구', function(요청, 응답){
+    //   응답.send('<p>some html</p>')                          send는 간단한 문자나 HTML을 보낼 수 있음.
+    //   응답.status(404).send('Sorry, we cannot find that!')   status는 응답코드를 보낼 수 있음
+    //   응답.sendFile('/uploads/logo.png')                     sendFile은 static 파일들을 보낼 수 있음
+    //   응답.render('list.ejs', { ejs에 보낼 데이터 })            render는 ejs등의 템플릿이 적용된 페이지들을 렌더링해줄 수 있음
+    //   응답.json(제이슨데이터)                                    json은 제이슨 데이터를 담아보낼 수 있음
+    // });
   }
 );
 
