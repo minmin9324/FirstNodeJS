@@ -38,13 +38,23 @@ MongoClient.connect(
     app.post("/app", (request, response) => {
       console.log(request.body);
       const { title, detail } = request.body;
+      let total;
+      client
+        .db("todoapp")
+        .collection("counter") //하낫만 찾을려면 findOne함수 사용 (쿼리문)
+        .findOne({ name: "게시물 갯수" }, (error, result) => {
+          total = result.total;
+        });
 
       client
         .db("todoapp")
         .collection("post")
-        .insertOne({ title: title, detail: detail }, (error, result) => {
-          console.log("저장완료");
-        });
+        .insertOne(
+          { _id: total + 1, title: title, detail: detail },
+          (error, result) => {
+            console.log("저장완료");
+          }
+        );
 
       response.send("전송완료");
     });
