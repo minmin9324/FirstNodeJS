@@ -99,7 +99,6 @@ MongoClient.connect(
     });
 
     app.delete("/delete", (request, response) => {
-      console.log(request.body);
       request.body._id = parseInt(request.body._id);
       client
         .db("todoapp")
