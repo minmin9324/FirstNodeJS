@@ -51,19 +51,71 @@
       </div>
     </nav>
 
-    서버에서 response받은 할일 리스트 <% MangoPosts.map(ele=>{ %>
-    <h4>title: <%=ele.title%></h4>
-    <p>detail:<%=ele.detail%></p>
-    <% })%>
-
+    서버에서 response받은 할일 리스트
+    <ul class="list-group">
+      <% MangoPosts.map(ele=>{ %>
+      <li class="list-group-item">
+        <h4>title: <%=ele.title%></h4>
+        <p>detail:<%=ele.detail%></p>
+        <button id="<%=ele._id%>" class="delete">삭제</button>
+      </li>
+      <% })%>
+    </ul>
     <!-- Optional JavaScript; choose one of the two! -->
 
+    <!-- AJAX 는 무엇인가
+프론트엔드에서 JavaScript를 이용해 서버에 여러가지 요청을 할 수 있는 문법 같은 것
+장점: 새로고침 없이도 서버에 몰래몰래 요청을 할 수 있다.
+=> 새로고침이 없는 스무스한 사이트를 만들고 싶으면 많은 요청을 AJAX 문법을 이용해 처리
+ 삭제 버튼을 누르는 순간 새로고침 없이도 글 삭제가 가능  -->
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+    <script>
+      $(".delete").click((e) => {
+        $.ajax({
+          method: "DELETE", // /delete 경로로 DELETE 요청을 하는데 요청과 함께 '1번게시물' 이라는 데이터를 보내줘
+          url: "/delete",
+          // data: "1번 게시물",
+          data: { _id: e.target.id }, //삭제할 번호를 넣어야함
+        })
+          .done((result) => {
+            console.log(result);
+            //서버에서 보낸 성공메세지가 옴
+
+            // 삭제버튼을 누르면 HTML화면은 변동이 없고 DB데이터만 지워짐.
+            // =>(AJAX는 새로고침 없이 몰래 요청을 처리)
+            //삭제한것처럼 지움
+            $(this).parent("li").fadeOut(); //지금 누른곳(이벤트가 동작하는 곳)의 부모(상위요소)중에 <li> 태그가 있으면 사라지게 해줘
+
+            //  1. $(this)는 현재 이벤트가 동작하는 곳. 다르지만 지금은 $(e.target)으로 대체 가능 (지금 누른곳)
+            // 하지만 e.target이나 this 같은 키워드 뒤에 jQuery 함수를 붙이고 싶다면 $() 안에 싸매야함
+
+            // 2. parent('li')는 부모 HTML 중 li태그를 찾아줘  parent() =>부모 태그를 찾아줘
+            // 3. fadeOut()은 사라지게 해줘
+            // 4. done() 안에 function(){} 말고 ()=>{} 형태여야 this값의 변형없이 잘됨. (bind)
+          })
+          .fail((xhr, code, err) => {
+            //fail 함수 내부의 3개의 파라미터는 차례로 jQuery의 XMLHttpRequest, 에러코드, 에러메세지
+            console.log(xhr, code, err);
+          });
+      });
+    </script>
+
+    <!-- <script>           //   add 경로로 POST 요청을 하는데 요청과 함께 '결혼하기' 라는 데이터를 보내줘
+  $.ajax({ 
+    method : 'POST',
+    url : '/add',
+    data : '결혼하기'
+  })
+</script> -->
+
     <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
-    <script
+    <!-- <script
       src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
       integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
       crossorigin="anonymous"
-    ></script>
+    ></script> -->
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
